@@ -1,38 +1,48 @@
-from .models import Submission, Choice, Question
+from django.shortcuts import render, redirect
+from .models import Course, Question, Choice, Submission
+
+
+def course_details(request, course_id):
+    course = Course.objects.get(id=course_id)
+    return render(
+        request,
+        'onlinecourse/course_details_bootstrap.html',
+        {'course': course}
+    )
+
 
 def submit_exam(request, course_id):
-    if request.method == 'POST':
-        submission = Submission.objects.create(
-            user=request.user,
-            course_id=course_id
-        )
-
-        total_score = 0
-
-        for key, value in request.POST.items():
-            if key.startswith('question_'):
-                choice = Choice.objects.get(id=value)
-                submission.choices.add(choice)
-
-                if choice.is_correct:
-                    total_score += choice.question.grade
-
-        submission.score = total_score
-        submission.save()
-
-        return redirect('exam_result', course_id=course_id)
-
-def show_exam_result(request, course_id):
     course = Course.objects.get(id=course_id)
-    submission = Submission.objects.filter(
+    submission = Submission.objects.create(
         user=request.user,
         course=course
-    ).last()
-
-    total_score = submission.score
-    possible_score = sum(
-        question.grade for question in course.question_set.all()
     )
+
+    for key, value in request.POST.items():
+        if key.startswith('question_'):
+            choice = Choice.objects.get(id=value)
+            submission.choices.add(choice)
+
+    submission.save()
+
+    return redirect(
+        'show_exam_result',
+        course_id=course.id,
+        submission_id=submission.id
+    )
+
+
+def show_exam_result(request, course_id, submission_id):
+    course = Course.objects.get(id=course_id)
+    submission = Submission.objects.get(id=submission_id)
+
+    total_score = 0
+    possible_score = 0
+
+    for question in course.question_set.all():
+        possible_score += question.grade
+        if question.is_get_score(submission):
+            total_score += question.grade
 
     return render(
         request,
