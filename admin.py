@@ -1,19 +1,34 @@
 from django.contrib import admin
-from .models import Course, Lesson, Instructor, Learner, Question, Choice, Submission
+from .models import (
+    Course,
+    Lesson,
+    Instructor,
+    Learner,
+    Question,
+    Choice,
+    Submission,
+)
+
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
     extra = 2
 
+
 class QuestionInline(admin.TabularInline):
     model = Question
     extra = 2
 
+
 class QuestionAdmin(admin.ModelAdmin):
+    list_display = ('question_text', 'course', 'grade')
     inlines = [ChoiceInline]
 
+
 class LessonAdmin(admin.ModelAdmin):
+    list_display = ('title', 'course')
     inlines = [QuestionInline]
+
 
 admin.site.register(Course)
 admin.site.register(Lesson, LessonAdmin)
