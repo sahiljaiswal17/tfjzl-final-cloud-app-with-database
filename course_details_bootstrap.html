@@ -1,14 +1,41 @@
-<form action="{% url 'submit_exam' course.id %}" method="post">
-  {% csrf_token %}
+onlinecourse/templates/onlinecourse/course_details_bootstrap.html
 
-  {% for question in course.question_set.all %}
-    <h4>{{ question.question_text }}</h4>
 
-    {% for choice in question.choice_set.all %}
-      <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}">
-      {{ choice.choice_text }}<br>
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2 class="mb-4">{{ course.name }}</h2>
+
+  <form method="post" action="{% url 'submit_exam' course.id %}">
+    {% csrf_token %}
+
+    {% for question in course.question_set.all %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5>{{ question.question_text }}</h5>
+
+          {% for choice in question.choice_set.all %}
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="question_{{ question.id }}"
+                value="{{ choice.id }}"
+              >
+              <label class="form-check-label">
+                {{ choice.choice_text }}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
     {% endfor %}
-  {% endfor %}
 
-  <button type="submit">Submit Exam</button>
-</form>
+    <button type="submit" class="btn btn-primary">
+      Submit Exam
+    </button>
+  </form>
+</div>
+
+{% endblock %}
