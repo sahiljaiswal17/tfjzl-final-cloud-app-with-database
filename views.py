@@ -21,3 +21,26 @@ def submit_exam(request, course_id):
         submission.save()
 
         return redirect('exam_result', course_id=course_id)
+
+def show_exam_result(request, course_id):
+    course = Course.objects.get(id=course_id)
+    submission = Submission.objects.filter(
+        user=request.user,
+        course=course
+    ).last()
+
+    total_score = submission.score
+    possible_score = sum(
+        question.grade for question in course.question_set.all()
+    )
+
+    return render(
+        request,
+        'onlinecourse/exam_result_bootstrap.html',
+        {
+            'course': course,
+            'submission': submission,
+            'total_score': total_score,
+            'possible_score': possible_score,
+        }
+    )
